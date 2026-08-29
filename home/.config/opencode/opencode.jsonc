@@ -1,0 +1,203 @@
+﻿{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": true,
+  "permission": {
+    "external_directory": "allow",
+    "task": "allow"
+  },
+  "agent": {
+    "discovery": {
+      "mode": "subagent",
+      "description": "Cross-source requirements discovery before development. Pulls prior discussions from meetings MCP + Honcho, past decisions/errors from memory-graph (FalkorDB), session memory from context-mode, and working patterns from the current codebase, then assembles a sourced requirements brief. Read-only by design â€” Honcho conclusion is the only local persistence. Invoke with @discovery <repo> <objetivo>.",
+      "prompt": "{file:./agents/discovery.md}",
+      "temperature": 0.2,
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "list": "allow",
+        "bash": {
+          "*": "ask",
+          "git log *": "allow",
+          "git diff *": "allow",
+          "git show *": "allow",
+          "git status *": "allow",
+          "memorygraph *": "allow"
+        },
+        "skill": "allow",
+        "task": "allow",
+        "webfetch": "allow",
+        "question": "allow",
+        "todowrite": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "external_directory": "ask"
+      }
+    },
+    "tars": {
+      "mode": "subagent",
+      "description": "TARS â€” orquestrador/arquiteto da herd herdr. Carrega skill herdr-maestro via skill tool; delega via `herdr agent prompt`; despacha subagents opencode para tarefas nÃ£o-herd. Detecta runtime via $env:HERDR_ENV. Invoke via @tars.",
+      "prompt": "{file:./prompts/tars.md}",
+      "temperature": 0.2,
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "list": "allow",
+        "bash": {
+          "*": "ask",
+          "herdr *": "allow",
+          "git log *": "allow",
+          "git diff *": "allow",
+          "git show *": "allow",
+          "git status *": "allow",
+          "memorygraph *": "allow"
+        },
+        "skill": "allow",
+        "task": "allow",
+        "webfetch": "allow",
+        "question": "allow",
+        "todowrite": "allow",
+        "edit": "deny",
+        "write": "deny",
+        "external_directory": "ask"
+      }
+    },
+    "escriba": {
+      "mode": "subagent",
+      "description": "Context consolidation and resumption scribe. @escriba finalize consolidates a session into six memory layers (handoff, INDEX, napkin, LTM ADRs, Honcho, memory-graph). @escriba resume produces a 'where we are, what's next' briefing from all layers. Decision lifecycle with L/M/H/C weight and propose-then-confirm supersession.",
+      "prompt": "{file:./prompts/escriba.md}",
+      "permission": {
+        "read": "allow",
+        "edit": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "list": "allow",
+        "bash": "allow",
+        "external_directory": "allow",
+        "skill": "allow",
+        "task": "allow"
+      }
+    },
+    "escriba-register-discover": {
+      "mode": "subagent",
+      "description": "@escriba register-discover <target-repo> <objetivo> â€” materializes findings (handoff / decisions / Honcho / memorygraph) in the TARGET repo, with Honcho workspace + memorygraph tag routed to the target. Honors existing records (no duplication). Auto-spawned by @discovery for cross-workspace findings. Cross-workspace variant of @escriba finalize; for same-workspace use @escriba finalize.",
+      "prompt": "{file:./agents/escriba-register-discover.md}",
+      "permission": {
+        "read": "allow",
+        "glob": "allow",
+        "grep": "allow",
+        "list": "allow",
+        "edit": "allow",
+        "write": "allow",
+        "bash": {
+          "*": "ask",
+          "git *": "allow",
+          "memorygraph *": "allow"
+        },
+        "skill": "allow",
+        "task": "allow",
+        "webfetch": "allow",
+        "question": "allow",
+        "todowrite": "allow",
+        "external_directory": "allow"
+      }
+    }
+  },
+  "plugin": [
+    "opencode-claude-auth@latest",
+    "@honcho-ai/opencode-honcho",
+    "compound-engineering",
+    "context-mode"
+  ],
+  "provider": {
+    "9Router": {
+      "npm": "@ai-sdk/openai-compatible",
+      "name": "9Router",
+      "options": {
+        "baseURL": "http://100.99.168.33:20128/v1",
+        "apiKey": "${env:NINEROUTER_ADMIN_TOKEN}"
+      },
+      "models": {
+        "tier-1": { "name": "Combo Tier 1 - Opus / GLM / QWEN" },
+        "tier-2": { "name": "Combo Tier 2 - Sonnet / DS4 / GLM / Minimax" },
+        "vision": { "name": "Combo de modelos com visÃ£o" },
+		"minimax/MiniMax-M3(thinking)": { "name": "Minimax M3 (Thinking)" }
+      }
+    }
+  },
+  "mcp": {
+	"kitesurf": {
+      "type": "local",
+      "command": [
+        "npx",
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--wsEndpoint=wss://kitesurf.cloudflare.app/devtools/browser"
+      ],
+      "enabled": true
+    },
+    "github": {
+      "type": "remote",
+      "url": "https://api.githubcopilot.com/mcp/",
+      "enabled": true,
+      "oauth": false,
+      "headers": {
+        "Authorization": "Bearer ${env:GITHUB_MCP_TOKEN}"
+      }
+    },
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "enabled": true,
+      "headers": {
+        "CONTEXT7_API_KEY": "${env:CONTEXT7_API_KEY}"
+      }
+    },
+	"MiniMax": {
+      "type": "local",
+      "command": ["uvx", "--with", "mcp<2", "minimax-coding-plan-mcp", "-y"],
+      "environment": {
+        "MINIMAX_API_KEY": "${env:MINIMAX_API_KEY}",
+        "MINIMAX_API_HOST": "https://api.minimax.io"
+      },
+      "enabled": true
+    },
+    "zai-vision": {
+      "type": "local",
+      "command": ["npx", "-y", "@z_ai/mcp-server@latest"],
+      "enabled": true,
+      "environment": {
+        "Z_AI_API_KEY": "1abe0c43cc824080960ae3ff4dbbc8a6.dDgy70ypWJnq1qfI",
+        "Z_AI_MODE": "${env:Z_AI_MODE}"
+      }
+    },
+    "meetings": {
+      "type": "remote",
+      "url": "https://mcp-meetings-mcp.wittysky-412f3116.brazilsouth.azurecontainerapps.io/mcp",
+      "enabled": true,
+      "headers": {
+        "Authorization": "Bearer ${env:MEETINGS_MCP_TOKEN}",
+        "x-user-email": "lincoln@livingnet.com.br"
+      }
+    },
+    "release-notes-living": {
+      "type": "remote",
+      "url": "https://mcp-release-notes-analyzer.wittysky-412f3116.brazilsouth.azurecontainerapps.io/mcp",
+      "enabled": true,
+      "oauth": false,
+      "headers": {
+        "Authorization": "Bearer ${env:MCP_BEARER_TOKEN}"
+      }
+    },
+    "winremote-ban": {
+      "type": "remote",
+      "url": "http://ban-ecb2.living.corp:8090/mcp",
+      "enabled": true,
+      "oauth": false,
+      "headers": {
+        "Authorization": "Bearer ${env:WINREMOTE_BAN_TOKEN}"
+      }
+    }
+  }
+}

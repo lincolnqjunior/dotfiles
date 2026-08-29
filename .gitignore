@@ -1,0 +1,41 @@
+﻿# Secrets â€” NEVER commit
+.env.keys
+.env
+*.env
+*.pem
+*.key
+id_ed25519*
+id_rsa*
+gha_key*
+gh_ed25519
+id_sddc
+privkeys/
+# Backups / transient
+*.bak
+*.bak.*
+*.lock
+*~
+# Operational / private
+napkin.md
+known_hosts
+# Build artifacts
+node_modules/
+dist/
+build/
+__pycache__/
+*.wasm
+*.map
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+# Windows-specific
+AppData/
+NTUSER*
+ntuser*
+# Large caches
+.cache/
+.npm/
+.local/share/Trash/
+# Logs
+*.log

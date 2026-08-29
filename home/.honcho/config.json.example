@@ -1,0 +1,189 @@
+﻿{
+  "apiKey": "<REDACTED-run-bw-login-or-restore-from-vps>",
+  "peerName": "lincoln",
+  "hosts": {
+    "claude_code": {
+      "workspace": "living",
+      "aiPeer": "claude"
+    },
+    "opencode": {
+      "workspace": "billing-ke",
+      "aiPeer": "opencode",
+      "recallMode": "hybrid",
+      "sessionStrategy": "per-directory",
+      "removeUserPrefix": true
+    }
+  },
+  "endpoint": {
+    "environment": "local",
+    "baseUrl": "http://100.99.168.33:8000"
+  },
+  "logging": true,
+  "sessions": {
+    "C:\\Users\\linco\\.config\\opencode": "lincoln-opencode-config",
+    "C:\\Users\\linco\\.config\\opencode\\agents": "lincoln-opencode-agents",
+    "C:\\Users\\linco\\.config\\opencode\\skills": "lincoln-opencode-skills",
+    "C:\\Users\\linco\\.config\\opencode\\docs": "lincoln-opencode-docs",
+    "C:\\Users\\linco\\source\\repos\\mediacao_ke20": "lincoln-mediacao_ke20",
+    "C:\\Users\\linco\\source\\repos\\mediacao_ecb17": "lincoln-mediacao_ecb17",
+    "C:\\Users\\linco\\source\\repos\\local-hocho": "lincoln-local-hocho",
+    "C:\\Users\\linco\\source\\repos\\delphos-svd": "lincoln-delphos-svd",
+    "C:\\Users\\linco\\source\\repos\\local-hocho\\honcho": "lincoln-honcho",
+    "C:\\Users\\linco\\source\\repos\\cidadao sentinela": "lincoln-cidadao-sentinela",
+    "C:\\Users\\linco\\source\\repos\\fluxer": "lincoln-fluxer",
+    "C:\\Users\\linco\\source\\repos\\delphos-svd\\src\\SVD.Web": "lincoln-svd-web",
+    "C:\\Users\\linco\\source\\servers\\integrator": "lincoln-integrator",
+    "C:\\Users\\linco\\source\\repos\\fluxer\\apps\\api": "lincoln-api",
+    "C:\\Users\\linco\\source\\repos\\fluxer\\apps\\web": "lincoln-web",
+    "C:\\Users\\linco\\source\\repos\\fluxer\\apps\\api\\src\\Fluxer.Infrastructure": "lincoln-fluxer-infrastructure",
+    "C:\\Users\\linco\\source\\repos\\mediacao_ecb17\\SourceCodeCommom": "lincoln-sourcecodecommom",
+    "C:\\Users\\linco\\source\\repos\\Elcano Robo OCR": "lincoln-elcano-robo-ocr",
+    "C:\\Users\\linco\\source\\repos": "lincoln-repos",
+    "C:\\Users\\linco": "lincoln-linco",
+    "C:\\Users\\linco\\source\\servers\\raspberry pi": "lincoln-raspberry-pi",
+    "C:\\Users\\linco\\source\\repos\\giftbase\\giftbase": "lincoln-giftbase",
+    "C:\\Users\\linco\\.claude\\plugins\\cache\\claude-plugins-official\\skill-creator\\unknown\\skills\\skill-creator": "lincoln-skill-creator",
+    "C:\\Users\\linco\\AppData\\Local\\Programs\\Open Design\\resources\\app\\prebundled": "lincoln-prebundled",
+    "C:\\Users\\linco\\source\\repos\\lead ecommerce living": "lincoln-lead-ecommerce-living",
+    "C:\\Users\\linco\\source\\repos\\omniroute-living": "lincoln-omniroute-living",
+    "C:\\Users\\linco\\source\\repos\\delphos-svd\\.claude\\worktrees\\plan-issue90-close-u11-u12": "lincoln-plan-issue90-close-u11-u12",
+    "C:\\Users\\linco\\source\\repos\\delphos-svd\\.worktrees\\fix-synthetic-agendamento-resposta": "lincoln-fix-synthetic-agendamento-resposta",
+    "C:\\Users\\linco\\AppData\\Local\\Temp": "lincoln-temp",
+    "C:\\Users\\linco\\.traycer\\host\\install": "lincoln-install",
+    "C:\\Users\\linco\\.traycer": "lincoln--traycer",
+    "C:\\Users\\linco\\.traycer\\worktrees\\b3monetization__release-notes-analyzer\\traycer-zealous-bear": "lincoln-traycer-zealous-bear",
+    "C:\\Users\\linco\\source\\ke_docs_mcp": "lincoln-ke_docs_mcp"
+  },
+  "workspaces": {
+    "living": {
+      "org": "living",
+      "repos": [
+        "area-measurement-v5",
+        "area-vision",
+        "codebase-assistant-aspire",
+        "codebase-assistant-devcontainer",
+        "delphos-svd",
+        "ForpontoMultiwebBlazor",
+        "Forpontoweb",
+        "hydra-flow",
+        "living-energy",
+        "livy-tldv-jobs",
+        "multilogger",
+        "Multilogger-1",
+        "omnibridge",
+        "pr-automation-dashboard",
+        "svr-delphos",
+        "table_tennis_mvp"
+      ]
+    },
+    "billing-ke": {
+      "org": [
+        "KE20CERC",
+        "b3monetization",
+        "LivingKE20"
+      ],
+      "repos": [
+        "Extension_CERC",
+        "SourceCodeCERC",
+        "EnumEntryCreator",
+        "mediacao_ecb17_balcao",
+        "Extension_Living",
+        "SourceCodeLiving"
+      ]
+    },
+    "personal": {
+      "org": "lincolnqjunior",
+      "repos": [
+        "DocMoney",
+        "easy-etl"
+      ]
+    },
+    "redlab": {
+      "org": "redlab-solutions",
+      "repos": [
+        "atende.ai",
+        "brute-legends",
+        "comunidade-escolar",
+        "contas.ai",
+        "digital-twin",
+        "life-os",
+        "loopclub",
+        "plant.ai",
+        "site-singular",
+        "yt-agent",
+        "yvy-multilogger"
+      ]
+    },
+    "lincoln-hub": {
+      "org": [
+        "living",
+        "redlab-solutions",
+        "b3monetization",
+        "KE20CERC",
+        "LivingKE20",
+        "lincolnqjunior"
+      ],
+      "repos": [
+        "opencode-config",
+        "meeting-requirement-gathering",
+        "ce-compound",
+        "ce-compound-refresh",
+        "ce-debug",
+        "ce-commit",
+        "ce-commit-push-pr",
+        "ce-doc-review",
+        "ce-code-review",
+        "ce-brainstorm",
+        "ce-plan",
+        "ce-work",
+        "ce-test-browser",
+        "ce-test-xcode",
+        "ce-dogfood",
+        "ce-dogfood-beta",
+        "ce-frontend-design",
+        "ce-polish-beta",
+        "ce-strategy",
+        "ce-ideate",
+        "ce-optimize",
+        "ce-product-pulse",
+        "ce-demo-reel",
+        "ce-proof",
+        "ce-session-finalize",
+        "ce-sessions",
+        "ce-simplify-code",
+        "ce-release-notes",
+        "ce-honcho",
+        "ce-honcho-cli",
+        "ce-honcho-integration",
+        "ce-hallmark",
+        "ce-archify",
+        "ce-gemini-imagegen",
+        "ce-riffrec-feedback-analysis",
+        "ce-resolve-pr-feedback",
+        "ce-clean-gone-branches",
+        "ce-write-skill",
+        "discovery",
+        "desktop-link"
+      ]
+    }
+  },
+  "repoToWorkspace": {
+    "opencode-config": "lincoln-hub",
+    "meeting-requirement-gathering": "lincoln-hub",
+    "discovery": "lincoln-hub",
+    "desktop-link": "lincoln-hub",
+    "living": "living",
+    "LivingKE20": "billing-ke",
+    "KE20CERC": "billing-ke",
+    "b3monetization": "billing-ke",
+    "lincolnqjunior": "lincoln-hub",
+    "redlab-solutions": "redlab",
+    "mem0ai": "personal",
+    "browser-use": "personal",
+    "lharries": "personal",
+    "nexu-io": "nexu-io",
+    "cosmtrek": "cosmtrek"
+  },
+  "baseUrl": "http://100.99.168.33:8000"
+}
+
