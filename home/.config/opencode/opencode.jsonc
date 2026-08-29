@@ -116,7 +116,7 @@
       "name": "9Router",
       "options": {
         "baseURL": "http://100.99.168.33:20128/v1",
-        "apiKey": "${env:NINEROUTER_ADMIN_TOKEN}"
+        "apiKey": "{env:NINEROUTER_ADMIN_TOKEN}"
       },
       "models": {
         "tier-1": { "name": "Combo Tier 1 - Opus / GLM / QWEN" },
@@ -143,7 +143,7 @@
       "enabled": true,
       "oauth": false,
       "headers": {
-        "Authorization": "Bearer ${env:GITHUB_MCP_TOKEN}"
+        "Authorization": "Bearer {env:GITHUB_MCP_TOKEN}"
       }
     },
     "context7": {
@@ -151,14 +151,14 @@
       "url": "https://mcp.context7.com/mcp",
       "enabled": true,
       "headers": {
-        "CONTEXT7_API_KEY": "${env:CONTEXT7_API_KEY}"
+        "CONTEXT7_API_KEY": "{env:CONTEXT7_API_KEY}"
       }
     },
 	"MiniMax": {
       "type": "local",
       "command": ["uvx", "--with", "mcp<2", "minimax-coding-plan-mcp", "-y"],
       "environment": {
-        "MINIMAX_API_KEY": "${env:MINIMAX_API_KEY}",
+        "MINIMAX_API_KEY": "{env:MINIMAX_API_KEY}",
         "MINIMAX_API_HOST": "https://api.minimax.io"
       },
       "enabled": true
@@ -168,8 +168,8 @@
       "command": ["npx", "-y", "@z_ai/mcp-server@latest"],
       "enabled": true,
       "environment": {
-        "Z_AI_API_KEY": "1abe0c43cc824080960ae3ff4dbbc8a6.dDgy70ypWJnq1qfI",
-        "Z_AI_MODE": "${env:Z_AI_MODE}"
+        "Z_AI_API_KEY": "{env:Z_AI_API_KEY}",
+        "Z_AI_MODE": "{env:Z_AI_MODE}"
       }
     },
     "meetings": {
@@ -177,7 +177,7 @@
       "url": "https://mcp-meetings-mcp.wittysky-412f3116.brazilsouth.azurecontainerapps.io/mcp",
       "enabled": true,
       "headers": {
-        "Authorization": "Bearer ${env:MEETINGS_MCP_TOKEN}",
+        "Authorization": "Bearer {env:MEETINGS_MCP_TOKEN}",
         "x-user-email": "lincoln@livingnet.com.br"
       }
     },
@@ -187,7 +187,7 @@
       "enabled": true,
       "oauth": false,
       "headers": {
-        "Authorization": "Bearer ${env:MCP_BEARER_TOKEN}"
+        "Authorization": "Bearer {env:MCP_BEARER_TOKEN}"
       }
     },
     "winremote-ban": {
@@ -196,7 +196,7 @@
       "enabled": true,
       "oauth": false,
       "headers": {
-        "Authorization": "Bearer ${env:WINREMOTE_BAN_TOKEN}"
+        "Authorization": "Bearer {env:WINREMOTE_BAN_TOKEN}"
       }
     }
   }

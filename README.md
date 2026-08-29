@@ -4,7 +4,7 @@ Omarchy-ready dotfiles snapshot from Windows 11 â†’ VPS-restoreable.
 Created during Omarchy migration on 2026-08-29.
 
 ## Files
-- `home/.config/opencode/opencode.jsonc` â€” uses `${env:...}` placeholders for secrets
+- `home/.config/opencode/opencode.jsonc` â€” uses `{env:...}` placeholders for secrets
 - `home/.config/opencode/opencode.jsonc.example` â€” redacted template (committed to repo)
 - `home/.config/opencode/{agents,prompts,plugins}/` â€” vendored agent + prompt + plugin content
 - `home/.config/opencode/skills/` + `home/.agents/skills/` â€” SKILL.md per skill only
