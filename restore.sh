@@ -45,6 +45,13 @@ config_src="$DOTFILES_DIR/home/.config/opencode/opencode.jsonc"
 link_entries "$DOTFILES_DIR/home/.config/opencode/agents" "$HOME/.config/opencode/agents"
 link_entries "$DOTFILES_DIR/home/.config/opencode/prompts" "$HOME/.config/opencode/prompts"
 link_entries "$DOTFILES_DIR/home/.config/opencode/plugins" "$HOME/.config/opencode/plugins"
+# QL5 (#228): o plugin do statusline tem imports BARE (solid-js, @opentui/*) e,
+# symlinkado, resolve pelo realpath — ou seja, a partir de dentro do checkout.
+# Sem este link, `node_modules` fica fora da árvore e o plugin morre com
+# ERR_MODULE_NOT_FOUND, em silêncio (mesma classe do 9a1de0e, que era para
+# import relativo; aqui é para import bare). node_modules é gitignored, então o
+# link precisa ser refeito a cada restore.
+ln -sfn "$HOME/.config/opencode/plugins/node_modules" "$DOTFILES_DIR/home/.config/opencode/plugins/node_modules"
 link_entries "$DOTFILES_DIR/home/.config/opencode/skills" "$HOME/.config/opencode/skills"
 link_entries "$DOTFILES_DIR/home/.agents/skills" "$HOME/.agents/skills"
 

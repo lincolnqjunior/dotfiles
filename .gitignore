@@ -20,6 +20,11 @@ napkin.md
 known_hosts
 # Build artifacts
 node_modules/
+# Symlink (não diretório) para o node_modules real do host: o plugin do
+# statusline symlinkado resolve import bare pelo realpath, então precisa
+# alcançar o node_modules de dentro do checkout. Recriado pelo restore.sh;
+# `node_modules/` acima só casa diretório e não pega este link.
+home/.config/opencode/plugins/node_modules
 dist/
 build/
 __pycache__/

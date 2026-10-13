@@ -6,6 +6,7 @@ import type { AssistantMessage, TextPart } from "@opencode-ai/sdk/v2"
 import { homedir } from "os"
 import { join } from "path"
 import { copyFile, writeFile, readFile, mkdir } from "fs/promises"
+import { readQuotaWindows, triggerQuotaRefresh } from "../lib/herd-quota-cache.mjs"
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -1460,175 +1461,28 @@ const tui: TuiPlugin = async (api, options, meta) => {
     let quotaInflight = ""
     let quotaTimer: ReturnType<typeof setInterval> | undefined
 
-    function quotaAuthPath(): string {
-      const xdg = (globalThis as unknown as { process?: { env?: Record<string, string | undefined> } }).process?.env?.XDG_DATA_HOME
-      if (xdg) return join(xdg, "opencode", "auth.json")
-      return join(homedir(), ".local/share/opencode/auth.json")
-    }
-
-    function fmtQuotaReset(ms: number): string {
-      const m = Math.max(0, Math.round(ms / 60000))
-      if (m < 60) return `${m}m`
-      const h = Math.floor(m / 60)
-      if (h < 48) return `${h}h`
-      return `${Math.floor(h / 24)}d`
-    }
-
-    function slotForReset(now: number, resetMs: number): "5h" | "7d" | "30d" {
-      const d = resetMs - now
-      if (d <= 12 * 3600 * 1000) return "5h"
-      if (d <= 10 * 24 * 3600 * 1000) return "7d"
-      return "30d"
-    }
-
-    async function fetchQuotaWindows(providerID: string): Promise<QuotaWindow[] | null> {
-      if (typeof fetch === "undefined") return null
-      let auth: Record<string, any> | null = null
-      try {
-        auth = JSON.parse(await readFile(quotaAuthPath(), "utf-8"))
-      } catch {
-        return null
-      }
-      const entry = auth?.[providerID]
-      const key: string | undefined = typeof entry === "string" ? entry : (entry?.key ?? entry?.access)
-      const ctrl = new AbortController()
-      const killer = setTimeout(() => ctrl.abort(), 15000)
-      try {
-        if (providerID === "minimax-coding-plan" || providerID === "minimax") {
-          if (!key) return null
-          const res = await fetch("https://api.minimax.io/v1/api/openplatform/coding_plan/remains", {
-            headers: { Authorization: `Bearer ${key}`, Accept: "application/json" },
-            signal: ctrl.signal,
-          })
-          const j = await res.json()
-          if (j?.base_resp?.status_code !== 0 || !Array.isArray(j.model_remains)) return null
-          const pct = (total: number, remain: number) =>
-            total > 0 ? Math.min(100, Math.max(0, Math.round(((total - remain) / total) * 100))) : -1
-          let h5 = -1
-          let w7 = -1
-          for (const r of j.model_remains) {
-            const a = pct(Number(r.current_interval_total_count ?? 0), Number(r.current_interval_usage_count ?? 0))
-            const b = pct(Number(r.current_weekly_total_count ?? 0), Number(r.current_weekly_usage_count ?? 0))
-            if (a > h5) h5 = a
-            if (b > w7) w7 = b
-          }
-          const out: QuotaWindow[] = []
-          if (h5 >= 0) out.push({ key: "5h", usedPct: h5 })
-          if (w7 >= 0) out.push({ key: "7d", usedPct: w7 })
-          return out
-        }
-        if (providerID === "zai-coding-plan" || providerID === "zai") {
-          if (!key) return null
-          const res = await fetch("https://api.z.ai/api/monitor/usage/quota/limit", {
-            headers: { Authorization: key, Accept: "application/json" },
-            signal: ctrl.signal,
-          })
-          const j = await res.json()
-          const lims = j?.data?.limits ?? j?.limits
-          if (!Array.isArray(lims)) return null
-          const now = Date.now()
-          const best: Record<string, number> = {}
-          for (const l of lims) {
-            const pc = Number(l?.percentage)
-            const rt = Number(l?.nextResetTime)
-            if (!Number.isFinite(pc) || !Number.isFinite(rt)) continue
-            const slot = slotForReset(now, rt)
-            best[slot] = Math.max(best[slot] ?? -1, Math.min(100, Math.max(0, Math.round(pc))))
-          }
-          return (["5h", "7d", "30d"] as const)
-            .filter((sl) => (best[sl] ?? -1) >= 0)
-            .map((sl) => ({ key: sl, usedPct: best[sl] }))
-        }
-        if (providerID === "anthropic") {
-          const token = typeof entry === "object" && entry !== null ? (entry.access ?? key) : key
-          if (!token) return null
-          const res = await fetch("https://api.anthropic.com/api/oauth/usage", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "anthropic-beta": "oauth-2025-04-20",
-              Accept: "application/json",
-            },
-            signal: ctrl.signal,
-          })
-          if (!res.ok) return null
-          const j = await res.json()
-          const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? v : -1)
-          const h5 = num(j?.five_hour?.utilization)
-          const w7 = Math.max(
-            num(j?.seven_day?.utilization),
-            num(j?.seven_day_sonnet?.utilization),
-            num(j?.seven_day_opus?.utilization),
-          )
-          const out: QuotaWindow[] = []
-          if (h5 >= 0) out.push({ key: "5h", usedPct: Math.min(100, Math.round(h5)) })
-          if (w7 >= 0) out.push({ key: "7d", usedPct: Math.min(100, Math.round(w7)) })
-          return out
-        }
-        if (providerID === "opencode-go") {
-          const apiKey = typeof entry === "object" && entry !== null ? (entry.key ?? key) : key
-          if (!apiKey) return null
-          const res = await fetch("https://opencode.ai/zen/go/v1/usage", {
-            headers: { Authorization: `Bearer ${apiKey}`, Accept: "application/json" },
-            signal: ctrl.signal,
-          })
-          if (!res.ok) return null
-          const j = await res.json()
-          const u = j?.usage
-          if (!u || typeof u !== "object") return null
-          const out: QuotaWindow[] = []
-          const pairs = [["rolling", "5h"], ["weekly", "7d"], ["monthly", "30d"]] as const
-          for (const [field, slot] of pairs) {
-            const w = u[field]
-            const pc = Number(w?.percent)
-            if (w?.status !== "ok" || !Number.isFinite(pc)) continue
-            const win: QuotaWindow = { key: slot, usedPct: Math.min(100, Math.max(0, Math.round(pc))) }
-            if (typeof w.resetsAt === "string") {
-              const ms = new Date(w.resetsAt).getTime() - Date.now()
-              if (Number.isFinite(ms) && ms > 0) win.resetIn = fmtQuotaReset(ms)
-            }
-            out.push(win)
-          }
-          return out
-        }
-        if (providerID === "openai") {
-          const token = typeof entry === "object" && entry !== null ? (entry.access ?? key) : key
-          const accountId = typeof entry === "object" && entry !== null ? (entry as Record<string, unknown>).accountId : undefined
-          if (typeof token !== "string" || !token) return null
-          const headers: Record<string, string> = {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-            "User-Agent": "Mozilla/5.0",
-          }
-          if (typeof accountId === "string" && accountId) headers["ChatGPT-Account-Id"] = accountId
-          const res = await fetch("https://chatgpt.com/backend-api/wham/usage", {
-            headers,
-            signal: ctrl.signal,
-          })
-          if (!res.ok) return null
-          const j = await res.json()
-          const rl = j?.rate_limit
-          if (!rl || typeof rl !== "object") return null
-          const now = Date.now()
-          const out: QuotaWindow[] = []
-          for (const wkey of ["primary_window", "secondary_window"] as const) {
-            const w = (rl as Record<string, unknown>)[wkey] as Record<string, unknown> | undefined
-            const pc = Number(w?.used_percent)
-            const rs = Number(w?.reset_after_seconds)
-            if (!Number.isFinite(pc) || !Number.isFinite(rs)) continue
-            out.push({
-              key: slotForReset(now, now + rs * 1000),
-              usedPct: Math.min(100, Math.max(0, Math.round(pc))),
-              resetIn: fmtQuotaReset(rs * 1000),
-            })
-          }
-          return out
-        }
-        return null
-      } catch {
-        return null
-      } finally {
-        clearTimeout(killer)
-      }
+    /**
+     * Fonte de dados da quota desde o QL5 (#228): a cache `herd-quota/v1`.
+     *
+     * O plugin é **leitor + gatilho** (Q-A8.3): lê o arquivo e, quando a entrada
+     * está stale ou ausente, dispara `herd-quota refresh --if-stale` num processo
+     * separado. Ele nunca busca quota na rede e nunca escreve a cache — o parse
+     * dos 5 providers (com as 4 correções do A8.3) mora no writer do selector.
+     *
+     * Trocar o engine embutido por esta leitura conserta 4 defeitos de uma vez:
+     * o TIME_LIMIT do Z.AI, os modelos de vídeo do MiniMax, a classificação de
+     * janela por tempo-até-o-reset e o arredondamento na cache. E troca N fetches
+     * (um por pane) por no máximo 1 leitura de arquivo por pane.
+     *
+     * Tolerante por construção: qualquer coisa errada vira lista vazia, nunca
+     * exceção — um throw aqui derrubaria o processo do opencode.
+     */
+    async function quotaWindowsFromCache(providerID: string): Promise<QuotaWindow[] | null> {
+      const { windows, stale } = await readQuotaWindows(providerID)
+      // stale/absente ⇒ pede o refresh e devolve o que tem. O próximo tick
+      // (QUOTA_TTL_MS) pega o dado novo; o timer systemd (#227) cobre o host.
+      if (stale) triggerQuotaRefresh()
+      return windows
     }
 
     function refreshQuota(providerID: string, force = false) {
@@ -1641,7 +1495,7 @@ const tui: TuiPlugin = async (api, options, meta) => {
       if (!force && cur.quotaAt > 0 && Date.now() - cur.quotaAt < QUOTA_TTL_MS) return
       if (quotaInflight === providerID) return
       quotaInflight = providerID
-      void fetchQuotaWindows(providerID).then((windows) => {
+      void quotaWindowsFromCache(providerID).then((windows) => {
         if (quotaInflight === providerID) quotaInflight = ""
         if (quotaProviderID !== providerID) return
         setData((p) => (p.quotaProvider === providerID ? { ...p, quotaWindows: windows ?? [], quotaAt: Date.now() } : p))
